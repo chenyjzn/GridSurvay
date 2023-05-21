@@ -1,12 +1,10 @@
 package com.yuchen.gridsurvay
 
 import android.graphics.Color
-import android.graphics.Matrix
 import android.os.Bundle
-import android.widget.LinearLayout
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.yuchen.gridsurvay.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -24,7 +22,7 @@ class MainActivity : AppCompatActivity() {
                 verticalDividerColor = Color.GREEN,
                 frameInDp = 8,
                 frameColor = Color.RED,
-                borderRadiusInDp = 20,
+                cornerRadiusInDp = 20,
                 titleBackGroundColor = Color.BLACK,
                 gridBackGroundColorList = listOf(Color.LTGRAY, Color.TRANSPARENT)
             )
