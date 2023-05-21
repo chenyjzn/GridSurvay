@@ -5,26 +5,29 @@ import android.graphics.*
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.roundToInt
 
 class GridItemDecoration(
     private val context: Context,
-    private val horizontalDividerInDp: Int = 0,
+    private val horizontalDividerInDp: Float = 0f,
     private val horizontalDividerColor: Int? = null,
-    private val verticalDividerInDp: Int = 0,
+    private val verticalDividerInDp: Float = 0f,
     private val verticalDividerColor: Int? = null,
-    private val frameInDp: Int = 0,
+    private val frameInDp: Float = 0f,
     private val frameColor: Int? = null,
-    private val cornerRadiusInDp: Int = 0,
+    private val cornerRadiusInDp: Float = 0f,
     private val titleBackGroundColor: Int? = null,
     private val gridBackGroundColorList: List<Int>? = null,
 ) : RecyclerView.ItemDecoration() {
+    private fun Context.floatDpToPx(dp: Float): Int = (dp * resources.displayMetrics.density).roundToInt()
+
     private val path = Path()
     private val backgroundPaint = Paint().apply {
         style = Paint.Style.FILL
         isAntiAlias = false
     }
 
-    private val horizontalDividerWidth = context.dpToPx(horizontalDividerInDp)
+    private val horizontalDividerWidth = context.floatDpToPx(horizontalDividerInDp)
     private val horizontalDividerPaint = Paint().apply {
         color = horizontalDividerColor ?: Color.TRANSPARENT
         strokeWidth = horizontalDividerWidth.toFloat()
@@ -32,7 +35,7 @@ class GridItemDecoration(
         isAntiAlias = false
     }
 
-    private val verticalDividerWidth = context.dpToPx(verticalDividerInDp)
+    private val verticalDividerWidth = context.floatDpToPx(verticalDividerInDp)
     private val verticalDividerPaint = Paint().apply {
         color = verticalDividerColor ?: Color.TRANSPARENT
         strokeWidth = verticalDividerWidth.toFloat()
@@ -40,7 +43,7 @@ class GridItemDecoration(
         isAntiAlias = false
     }
 
-    private val frameWidth = context.dpToPx(frameInDp)
+    private val frameWidth = context.floatDpToPx(frameInDp)
     private val framePaint = Paint().apply {
         color = frameColor ?: Color.TRANSPARENT
         strokeWidth = frameWidth.toFloat()
@@ -48,7 +51,7 @@ class GridItemDecoration(
         isAntiAlias = true
     }
 
-    private val cornerRadius = context.dpToPx(cornerRadiusInDp)
+    private val cornerRadius = context.floatDpToPx(cornerRadiusInDp)
     private val borderPaint = Paint().apply {
         color = Color.TRANSPARENT
         style = Paint.Style.FILL
