@@ -30,32 +30,35 @@ class GridItemDecoration(
     private val horizontalDividerWidth = context.floatDpToPx(horizontalDividerInDp)
     private val horizontalDividerPaint = Paint().apply {
         color = horizontalDividerColor ?: Color.TRANSPARENT
-        strokeWidth = horizontalDividerWidth.toFloat()
-        style = Paint.Style.STROKE
+        style = Paint.Style.FILL
         isAntiAlias = false
     }
 
     private val verticalDividerWidth = context.floatDpToPx(verticalDividerInDp)
     private val verticalDividerPaint = Paint().apply {
         color = verticalDividerColor ?: Color.TRANSPARENT
-        strokeWidth = verticalDividerWidth.toFloat()
-        style = Paint.Style.STROKE
+        style = Paint.Style.FILL
         isAntiAlias = false
     }
 
     private val frameWidth = context.floatDpToPx(frameInDp)
     private val framePaint = Paint().apply {
         color = frameColor ?: Color.TRANSPARENT
-        strokeWidth = frameWidth.toFloat()
-        style = Paint.Style.STROKE
+        style = Paint.Style.FILL
         isAntiAlias = true
     }
 
     private val cornerRadius = context.floatDpToPx(cornerRadiusInDp)
-    private val borderPaint = Paint().apply {
+    private val cornerCutPaint = Paint().apply {
         color = Color.TRANSPARENT
         style = Paint.Style.FILL
         xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+    }
+    private val cornerFramePaint = Paint().apply {
+        color = frameColor ?: Color.TRANSPARENT
+        strokeWidth = frameWidth.toFloat()
+        style = Paint.Style.STROKE
+        isAntiAlias = true
     }
 
     private val frameRect = RectF()
@@ -203,52 +206,60 @@ class GridItemDecoration(
 
     private fun updateVerticalDividerMap(gridOnScreenParameter: List<Int>, gridFrameDetectRect: Rect, currentRect: RectF) {
         if (verticalDividerWidth <= 0 || verticalDividerColor == null) return
-        if (gridFrameDetectRect.left != 1) {
+        if (gridFrameDetectRect.left != IS_FRAME) {
             if (verticalDividerMap.contains(gridOnScreenParameter.column() - 1)) {
                 verticalDividerMap[gridOnScreenParameter.column() - 1]?.apply {
                     top = minOf(currentRect.top, top)
                     bottom = maxOf(currentRect.bottom, bottom)
+                    left = minOf(currentRect.left - verticalDividerWidth, left)
+                    right = maxOf(currentRect.left, right)
                 }
             } else {
                 verticalDividerMap[gridOnScreenParameter.column() - 1] =
-                    RectF(currentRect.left - verticalDividerWidth / 2, currentRect.top, currentRect.left - verticalDividerWidth / 2, currentRect.bottom)
+                    RectF(currentRect.left - verticalDividerWidth, currentRect.top, currentRect.left, currentRect.bottom)
             }
         }
-        if (gridFrameDetectRect.right != 1) {
+        if (gridFrameDetectRect.right != IS_FRAME) {
             if (verticalDividerMap.contains(gridOnScreenParameter.column())) {
                 verticalDividerMap[gridOnScreenParameter.column()]?.apply {
                     top = minOf(currentRect.top, top)
                     bottom = maxOf(currentRect.bottom, bottom)
+                    left = minOf(currentRect.right, left)
+                    right = maxOf(currentRect.right + verticalDividerWidth, right)
                 }
             } else {
                 verticalDividerMap[gridOnScreenParameter.column()] =
-                    RectF(currentRect.right + verticalDividerWidth / 2, currentRect.top, currentRect.right + verticalDividerWidth / 2, currentRect.bottom)
+                    RectF(currentRect.right, currentRect.top, currentRect.right + verticalDividerWidth, currentRect.bottom)
             }
         }
     }
 
     private fun updateHorizontalDividerMap(gridFrameDetectRect: Rect, gridOnScreenParameter: List<Int>, currentRect: RectF) {
         if (horizontalDividerWidth <= 0 || horizontalDividerColor == null) return
-        if (gridFrameDetectRect.top != 1) {
+        if (gridFrameDetectRect.top != IS_FRAME) {
             if (horizontalDividerMap.contains(gridOnScreenParameter.row() - 1)) {
                 horizontalDividerMap[gridOnScreenParameter.row() - 1]?.apply {
+                    top = minOf(currentRect.top - horizontalDividerWidth, top)
+                    bottom = maxOf(currentRect.top, bottom)
                     right = maxOf(currentRect.right, right)
                     left = minOf(currentRect.left, left)
                 }
             } else {
                 horizontalDividerMap[gridOnScreenParameter.row() - 1] =
-                    RectF(currentRect.left, currentRect.top - horizontalDividerWidth / 2, currentRect.right, currentRect.top - horizontalDividerWidth / 2)
+                    RectF(currentRect.left, currentRect.top - horizontalDividerWidth, currentRect.right, currentRect.top)
             }
         }
-        if (gridFrameDetectRect.bottom != 1) {
+        if (gridFrameDetectRect.bottom != IS_FRAME) {
             if (horizontalDividerMap.contains(gridOnScreenParameter.row())) {
                 horizontalDividerMap[gridOnScreenParameter.row()]?.apply {
+                    top = minOf(currentRect.bottom, top)
+                    bottom = maxOf(currentRect.bottom + horizontalDividerWidth, bottom)
                     right = maxOf(currentRect.right, right)
                     left = minOf(currentRect.left, left)
                 }
             } else {
                 horizontalDividerMap[gridOnScreenParameter.row()] =
-                    RectF(currentRect.left, currentRect.bottom + horizontalDividerWidth / 2, currentRect.right, currentRect.bottom + horizontalDividerWidth / 2)
+                    RectF(currentRect.left, currentRect.bottom, currentRect.right, currentRect.bottom + horizontalDividerWidth)
             }
         }
     }
@@ -272,23 +283,24 @@ class GridItemDecoration(
     private fun drawHorizontalDivider(c: Canvas) {
         if (horizontalDividerWidth <= 0 || horizontalDividerColor == null) return
         horizontalDividerMap.forEach {
-            c.drawLine(it.value.left, it.value.top, it.value.right, it.value.bottom, horizontalDividerPaint)
+            c.drawRect(it.value.left, it.value.top, it.value.right, it.value.bottom, horizontalDividerPaint)
         }
     }
 
     private fun drawVerticalDivider(c: Canvas) {
         if (verticalDividerWidth <= 0 || verticalDividerColor == null) return
         verticalDividerMap.forEach {
-            c.drawLine(it.value.left, it.value.top, it.value.right, it.value.bottom, verticalDividerPaint)
+            c.drawRect(it.value.left, it.value.top, it.value.right, it.value.bottom, verticalDividerPaint)
         }
     }
 
     private fun drawFrame(c: Canvas) {
         if (frameWidth <= 0 || frameColor == null) return
-        if (frameDetectRect.left == 1) c.drawLine(frameRect.left - frameWidth / 2, frameRect.top - frameWidth, frameRect.left - frameWidth / 2, frameRect.bottom + frameWidth, framePaint)
-        if (frameDetectRect.top == 1) c.drawLine(frameRect.left - frameWidth, frameRect.top - frameWidth / 2, frameRect.right + frameWidth, frameRect.top - frameWidth / 2, framePaint)
-        if (frameDetectRect.right == 1) c.drawLine(frameRect.right + frameWidth / 2, frameRect.top - frameWidth, frameRect.right + frameWidth / 2, frameRect.bottom + frameWidth, framePaint)
-        if (frameDetectRect.bottom == 1) c.drawLine(frameRect.left - frameWidth, frameRect.bottom + frameWidth / 2, frameRect.right + frameWidth, frameRect.bottom + frameWidth / 2, framePaint)
+        if (frameDetectRect.left == 1) c.drawRect(frameRect.left - frameWidth, frameRect.top - frameWidth, frameRect.left, frameRect.bottom + frameWidth, framePaint)
+        if (frameDetectRect.top == 1) c.drawRect(frameRect.left - frameWidth, frameRect.top - frameWidth, frameRect.right + frameWidth, frameRect.top, framePaint)
+        if (frameDetectRect.right == 1) c.drawRect(frameRect.right + frameWidth, frameRect.top - frameWidth, frameRect.right, frameRect.bottom + frameWidth, framePaint)
+        if (frameDetectRect.bottom == 1) c.drawRect(frameRect.left - frameWidth, frameRect.bottom, frameRect.right + frameWidth, frameRect.bottom + frameWidth, framePaint)
+
     }
 
     private fun drawCornerRadius(c: Canvas) {
@@ -315,14 +327,14 @@ class GridItemDecoration(
             zeroY + CORNER_RADIUS_RECT_TABLE[borderType].bottom * cornerRadius.toFloat()
         )
         path.arcTo(arcRect, CORNER_RADIUS_ARC_START_ANGLE[borderType], 90f, false)
-        c.drawPath(path, borderPaint)
+        c.drawPath(path, cornerCutPaint)
 
         if (frameColor == null || cornerRadius <= 0) return
 
         path.reset()
         arcRect.inset(frameWidth / 2f, frameWidth / 2f)
         path.arcTo(arcRect, CORNER_RADIUS_ARC_START_ANGLE[borderType], 90f, true)
-        c.drawPath(path, framePaint)
+        c.drawPath(path, cornerFramePaint)
     }
 
     companion object {
