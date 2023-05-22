@@ -13,20 +13,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         binding.recyclerView.layoutManager = GridLayoutManager(this, 3)
-        binding.recyclerView.addItemDecoration(
-            GridItemDecoration(
-                binding.recyclerView.context,
-                horizontalDividerInDp = 10,
-                horizontalDividerColor = Color.BLUE,
-                verticalDividerInDp = 5,
-                verticalDividerColor = Color.GREEN,
-                frameInDp = 8,
-                frameColor = Color.RED,
-                cornerRadiusInDp = 20,
-                titleBackGroundColor = Color.BLACK,
-                gridBackGroundColorList = listOf(Color.LTGRAY, Color.TRANSPARENT)
-            )
-        )
+        GridItemDecorationBuilder(binding.recyclerView.context)
+            .verticalDivider(1, 0xffffffff.toInt())
+            .frame(1, 0xffe6e6e6.toInt())
+            .cornerRadius(4)
+            .titleBackGroundColor(0xff333333.toInt())
+            .gridBackGroundColorList(listOf(0xfff3f3f3.toInt(), 0xffffffff.toInt()))
+            .build()
+            .into(binding.recyclerView)
+//        binding.recyclerView.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         val adapter = GridTestAdapter()
         binding.recyclerView.adapter = adapter
         adapter.notifyDataSetChanged()
