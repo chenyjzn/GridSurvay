@@ -109,6 +109,7 @@ class GridItemDecoration(
 
     override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         super.onDraw(c, parent, state)
+        if (titleBackGroundColor == null && gridBackGroundColorList == null && frameColor == null && verticalDividerColor == null && horizontalDividerColor == null) return
         val spanCount = (parent.layoutManager as? GridLayoutManager)?.spanCount ?: return
         val orientation = (parent.layoutManager as? GridLayoutManager)?.orientation ?: return
         val totalItemCount = parent.adapter?.itemCount ?: return
@@ -127,103 +128,59 @@ class GridItemDecoration(
             val gridParameter = getGridRowColumnParameter(totalItemCount, position, spanCount, orientation, parent.layoutDirection)
             val gridFrameDetectRect = getGridFrameDetectRect(gridParameter.row(), gridParameter.column(), gridParameter.rowSize(), gridParameter.columnSize())
             val gridOnScreenParameter = getGridRowColumnParameter(onScreenCount, i, spanCount, orientation, parent.layoutDirection)
-            // draw background
-            val backgroundColor = getBackgroundColor(position, spanCount)
-            backgroundPaint.color = backgroundColor
-            c.drawRect(currentRect, backgroundPaint)
-            // GetFrame
-            if (gridOnScreenParameter.row() == 1 && gridOnScreenParameter.column() == 1) {
-                frameRect.left = currentRect.left
-                frameRect.top = currentRect.top
-                frameDetectRect.left = gridFrameDetectRect.left
-                frameDetectRect.top = gridFrameDetectRect.top
-            }
-            if (gridOnScreenParameter.row() == gridOnScreenParameter.rowSize() && gridOnScreenParameter.column() == gridOnScreenParameter.columnSize()) {
-                frameRect.right = currentRect.right
-                frameRect.bottom = currentRect.bottom
-                frameDetectRect.right = gridFrameDetectRect.right
-                frameDetectRect.bottom = gridFrameDetectRect.bottom
-            }
 
-            // Get vertical divider
-            if (gridFrameDetectRect.left != 1) {
-                if (verticalDividerMap.contains(gridOnScreenParameter.column() - 1)) {
-                    verticalDividerMap[gridOnScreenParameter.column() - 1]?.apply {
-                        top = minOf(currentRect.top, top)
-                        bottom = maxOf(currentRect.bottom, bottom)
-                    }
-                } else {
-                    verticalDividerMap[gridOnScreenParameter.column() - 1] =
-                        RectF(currentRect.left - verticalDividerWidth / 2, currentRect.top, currentRect.left - verticalDividerWidth / 2, currentRect.bottom)
-                }
-            }
-            if (gridFrameDetectRect.right != 1) {
-                if (verticalDividerMap.contains(gridOnScreenParameter.column())) {
-                    verticalDividerMap[gridOnScreenParameter.column()]?.apply {
-                        top = minOf(currentRect.top, top)
-                        bottom = maxOf(currentRect.bottom, bottom)
-                    }
-                } else {
-                    verticalDividerMap[gridOnScreenParameter.column()] =
-                        RectF(currentRect.right + verticalDividerWidth / 2, currentRect.top, currentRect.right + verticalDividerWidth / 2, currentRect.bottom)
-                }
-            }
+            drawGridBackground(position, spanCount, c, currentRect)
 
-            // Get horizontal divider
-            if (gridFrameDetectRect.top != 1) {
-                if (horizontalDividerMap.contains(gridOnScreenParameter.row() - 1)) {
-                    horizontalDividerMap[gridOnScreenParameter.row() - 1]?.apply {
-                        right = maxOf(currentRect.right, right)
-                        left = minOf(currentRect.left, left)
-                    }
-                } else {
-                    horizontalDividerMap[gridOnScreenParameter.row() - 1] =
-                        RectF(currentRect.left, currentRect.top - horizontalDividerWidth / 2, currentRect.right, currentRect.top - horizontalDividerWidth / 2)
-                }
-            }
-            if (gridFrameDetectRect.bottom != 1) {
-                if (horizontalDividerMap.contains(gridOnScreenParameter.row())) {
-                    horizontalDividerMap[gridOnScreenParameter.row()]?.apply {
-                        right = maxOf(currentRect.right, right)
-                        left = minOf(currentRect.left, left)
-                    }
-                } else {
-                    horizontalDividerMap[gridOnScreenParameter.row()] =
-                        RectF(currentRect.left, currentRect.bottom + horizontalDividerWidth / 2, currentRect.right, currentRect.bottom + horizontalDividerWidth / 2)
-                }
+            if (parent.layerType != View.LAYER_TYPE_SOFTWARE) {
+                updateVerticalDividerMap(gridOnScreenParameter, gridFrameDetectRect, currentRect)
+                updateHorizontalDividerMap(gridFrameDetectRect, gridOnScreenParameter, currentRect)
+                updateFrameRect(gridOnScreenParameter, gridFrameDetectRect, currentRect)
             }
         }
 
-        // Draw vertical divider
-        if (verticalDividerWidth > 0 && verticalDividerColor != null) {
-            verticalDividerMap.forEach {
-                c.drawLine(it.value.left, it.value.top, it.value.right, it.value.bottom, verticalDividerPaint)
-            }
+        if (parent.layerType != View.LAYER_TYPE_SOFTWARE) {
+            drawVerticalDivider(c)
+            drawHorizontalDivider(c)
+            drawFrame(c)
+            drawCornerRadius(c)
         }
 
-        // Draw horizontal divider
-        if (horizontalDividerWidth > 0 && horizontalDividerColor != null) {
-            horizontalDividerMap.forEach {
-                c.drawLine(it.value.left, it.value.top, it.value.right, it.value.bottom, horizontalDividerPaint)
-            }
-        }
-
-        // Draw frame
-        if (frameWidth > 0 && frameColor != null) {
-            if (frameDetectRect.left == 1) c.drawLine(frameRect.left - frameWidth / 2, frameRect.top - frameWidth, frameRect.left - frameWidth / 2, frameRect.bottom + frameWidth, framePaint)
-            if (frameDetectRect.top == 1) c.drawLine(frameRect.left - frameWidth, frameRect.top - frameWidth / 2, frameRect.right + frameWidth, frameRect.top - frameWidth / 2, framePaint)
-            if (frameDetectRect.right == 1) c.drawLine(frameRect.right + frameWidth / 2, frameRect.top - frameWidth, frameRect.right + frameWidth / 2, frameRect.bottom + frameWidth, framePaint)
-            if (frameDetectRect.bottom == 1) c.drawLine(frameRect.left - frameWidth, frameRect.bottom + frameWidth / 2, frameRect.right + frameWidth, frameRect.bottom + frameWidth / 2, framePaint)
-        }
-
-        // Draw corner
-        if (cornerRadius > 0) {
-            if (frameDetectRect.left == 1 && frameDetectRect.top == 1) drawCornerRadius(frameRect.left, frameRect.top, LEFT_TOP, c)
-            if (frameDetectRect.right == 1 && frameDetectRect.top == 1) drawCornerRadius(frameRect.right, frameRect.top, RIGHT_TOP, c)
-            if (frameDetectRect.left == 1 && frameDetectRect.bottom == 1) drawCornerRadius(frameRect.left, frameRect.bottom, LEFT_BOTTOM, c)
-            if (frameDetectRect.right == 1 && frameDetectRect.bottom == 1) drawCornerRadius(frameRect.right, frameRect.bottom, RIGHT_BOTTOM, c)
-        }
         c.restoreToCount(layer)
+    }
+
+    override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+        super.onDrawOver(c, parent, state)
+        if (frameColor == null && verticalDividerColor == null && horizontalDividerColor == null) return
+        val spanCount = (parent.layoutManager as? GridLayoutManager)?.spanCount ?: return
+        val orientation = (parent.layoutManager as? GridLayoutManager)?.orientation ?: return
+        val totalItemCount = parent.adapter?.itemCount ?: return
+        val onScreenCount: Int = parent.childCount
+
+        frameDetectRect.set(NOT_FRAME, NOT_FRAME, NOT_FRAME, NOT_FRAME)
+        verticalDividerMap.clear()
+        horizontalDividerMap.clear()
+
+        for (i in 0 until onScreenCount) {
+            val view: View = parent.getChildAt(i)
+            val position: Int = parent.getChildAdapterPosition(view)
+            val currentRect = RectF(view.left.toFloat(), view.top.toFloat(), view.right.toFloat(), view.bottom.toFloat())
+            val gridParameter = getGridRowColumnParameter(totalItemCount, position, spanCount, orientation, parent.layoutDirection)
+            val gridFrameDetectRect = getGridFrameDetectRect(gridParameter.row(), gridParameter.column(), gridParameter.rowSize(), gridParameter.columnSize())
+            val gridOnScreenParameter = getGridRowColumnParameter(onScreenCount, i, spanCount, orientation, parent.layoutDirection)
+
+            if (parent.layerType == View.LAYER_TYPE_SOFTWARE) {
+                updateVerticalDividerMap(gridOnScreenParameter, gridFrameDetectRect, currentRect)
+                updateHorizontalDividerMap(gridFrameDetectRect, gridOnScreenParameter, currentRect)
+                updateFrameRect(gridOnScreenParameter, gridFrameDetectRect, currentRect)
+            }
+        }
+
+        if (parent.layerType == View.LAYER_TYPE_SOFTWARE) {
+            drawVerticalDivider(c)
+            drawHorizontalDivider(c)
+            drawFrame(c)
+            drawCornerRadius(c)
+        }
     }
 
     private fun getBackgroundColor(position: Int, spanCount: Int): Int {
@@ -236,6 +193,110 @@ class GridItemDecoration(
         } catch (e: Exception) {
             return Color.TRANSPARENT
         }
+    }
+
+    private fun drawGridBackground(position: Int, spanCount: Int, c: Canvas, currentRect: RectF) {
+        val backgroundColor = getBackgroundColor(position, spanCount)
+        backgroundPaint.color = backgroundColor
+        c.drawRect(currentRect, backgroundPaint)
+    }
+
+    private fun updateVerticalDividerMap(gridOnScreenParameter: List<Int>, gridFrameDetectRect: Rect, currentRect: RectF) {
+        if (verticalDividerWidth <= 0 || verticalDividerColor == null) return
+        if (gridFrameDetectRect.left != 1) {
+            if (verticalDividerMap.contains(gridOnScreenParameter.column() - 1)) {
+                verticalDividerMap[gridOnScreenParameter.column() - 1]?.apply {
+                    top = minOf(currentRect.top, top)
+                    bottom = maxOf(currentRect.bottom, bottom)
+                }
+            } else {
+                verticalDividerMap[gridOnScreenParameter.column() - 1] =
+                    RectF(currentRect.left - verticalDividerWidth / 2, currentRect.top, currentRect.left - verticalDividerWidth / 2, currentRect.bottom)
+            }
+        }
+        if (gridFrameDetectRect.right != 1) {
+            if (verticalDividerMap.contains(gridOnScreenParameter.column())) {
+                verticalDividerMap[gridOnScreenParameter.column()]?.apply {
+                    top = minOf(currentRect.top, top)
+                    bottom = maxOf(currentRect.bottom, bottom)
+                }
+            } else {
+                verticalDividerMap[gridOnScreenParameter.column()] =
+                    RectF(currentRect.right + verticalDividerWidth / 2, currentRect.top, currentRect.right + verticalDividerWidth / 2, currentRect.bottom)
+            }
+        }
+    }
+
+    private fun updateHorizontalDividerMap(gridFrameDetectRect: Rect, gridOnScreenParameter: List<Int>, currentRect: RectF) {
+        if (horizontalDividerWidth <= 0 || horizontalDividerColor == null) return
+        if (gridFrameDetectRect.top != 1) {
+            if (horizontalDividerMap.contains(gridOnScreenParameter.row() - 1)) {
+                horizontalDividerMap[gridOnScreenParameter.row() - 1]?.apply {
+                    right = maxOf(currentRect.right, right)
+                    left = minOf(currentRect.left, left)
+                }
+            } else {
+                horizontalDividerMap[gridOnScreenParameter.row() - 1] =
+                    RectF(currentRect.left, currentRect.top - horizontalDividerWidth / 2, currentRect.right, currentRect.top - horizontalDividerWidth / 2)
+            }
+        }
+        if (gridFrameDetectRect.bottom != 1) {
+            if (horizontalDividerMap.contains(gridOnScreenParameter.row())) {
+                horizontalDividerMap[gridOnScreenParameter.row()]?.apply {
+                    right = maxOf(currentRect.right, right)
+                    left = minOf(currentRect.left, left)
+                }
+            } else {
+                horizontalDividerMap[gridOnScreenParameter.row()] =
+                    RectF(currentRect.left, currentRect.bottom + horizontalDividerWidth / 2, currentRect.right, currentRect.bottom + horizontalDividerWidth / 2)
+            }
+        }
+    }
+
+    private fun updateFrameRect(gridOnScreenParameter: List<Int>, gridFrameDetectRect: Rect, currentRect: RectF) {
+        if (frameColor == null && cornerRadius <= 0) return
+        if (gridOnScreenParameter.row() == 1 && gridOnScreenParameter.column() == 1) {
+            frameRect.left = currentRect.left
+            frameRect.top = currentRect.top
+            frameDetectRect.left = gridFrameDetectRect.left
+            frameDetectRect.top = gridFrameDetectRect.top
+        }
+        if (gridOnScreenParameter.row() == gridOnScreenParameter.rowSize() && gridOnScreenParameter.column() == gridOnScreenParameter.columnSize()) {
+            frameRect.right = currentRect.right
+            frameRect.bottom = currentRect.bottom
+            frameDetectRect.right = gridFrameDetectRect.right
+            frameDetectRect.bottom = gridFrameDetectRect.bottom
+        }
+    }
+
+    private fun drawHorizontalDivider(c: Canvas) {
+        if (horizontalDividerWidth <= 0 || horizontalDividerColor == null) return
+        horizontalDividerMap.forEach {
+            c.drawLine(it.value.left, it.value.top, it.value.right, it.value.bottom, horizontalDividerPaint)
+        }
+    }
+
+    private fun drawVerticalDivider(c: Canvas) {
+        if (verticalDividerWidth <= 0 || verticalDividerColor == null) return
+        verticalDividerMap.forEach {
+            c.drawLine(it.value.left, it.value.top, it.value.right, it.value.bottom, verticalDividerPaint)
+        }
+    }
+
+    private fun drawFrame(c: Canvas) {
+        if (frameWidth <= 0 || frameColor == null) return
+        if (frameDetectRect.left == 1) c.drawLine(frameRect.left - frameWidth / 2, frameRect.top - frameWidth, frameRect.left - frameWidth / 2, frameRect.bottom + frameWidth, framePaint)
+        if (frameDetectRect.top == 1) c.drawLine(frameRect.left - frameWidth, frameRect.top - frameWidth / 2, frameRect.right + frameWidth, frameRect.top - frameWidth / 2, framePaint)
+        if (frameDetectRect.right == 1) c.drawLine(frameRect.right + frameWidth / 2, frameRect.top - frameWidth, frameRect.right + frameWidth / 2, frameRect.bottom + frameWidth, framePaint)
+        if (frameDetectRect.bottom == 1) c.drawLine(frameRect.left - frameWidth, frameRect.bottom + frameWidth / 2, frameRect.right + frameWidth, frameRect.bottom + frameWidth / 2, framePaint)
+    }
+
+    private fun drawCornerRadius(c: Canvas) {
+        if (cornerRadius <= 0) return
+        if (frameDetectRect.left == 1 && frameDetectRect.top == 1) drawCornerRadius(frameRect.left, frameRect.top, LEFT_TOP, c)
+        if (frameDetectRect.right == 1 && frameDetectRect.top == 1) drawCornerRadius(frameRect.right, frameRect.top, RIGHT_TOP, c)
+        if (frameDetectRect.left == 1 && frameDetectRect.bottom == 1) drawCornerRadius(frameRect.left, frameRect.bottom, LEFT_BOTTOM, c)
+        if (frameDetectRect.right == 1 && frameDetectRect.bottom == 1) drawCornerRadius(frameRect.right, frameRect.bottom, RIGHT_BOTTOM, c)
     }
 
     private fun drawCornerRadius(x: Float, y: Float, borderType: Int, c: Canvas) {
@@ -256,12 +317,12 @@ class GridItemDecoration(
         path.arcTo(arcRect, CORNER_RADIUS_ARC_START_ANGLE[borderType], 90f, false)
         c.drawPath(path, borderPaint)
 
-        if (frameWidth > 0) {
-            path.reset()
-            arcRect.inset(frameWidth / 2f, frameWidth / 2f)
-            path.arcTo(arcRect, CORNER_RADIUS_ARC_START_ANGLE[borderType], 90f, true)
-            c.drawPath(path, framePaint)
-        }
+        if (frameColor == null || cornerRadius <= 0) return
+
+        path.reset()
+        arcRect.inset(frameWidth / 2f, frameWidth / 2f)
+        path.arcTo(arcRect, CORNER_RADIUS_ARC_START_ANGLE[borderType], 90f, true)
+        c.drawPath(path, framePaint)
     }
 
     companion object {

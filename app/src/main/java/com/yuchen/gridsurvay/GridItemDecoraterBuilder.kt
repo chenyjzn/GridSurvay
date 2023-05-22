@@ -4,21 +4,16 @@ import android.content.Context
 import androidx.recyclerview.widget.RecyclerView
 
 abstract class AbstractGridItemDecorationBuilder {
-    abstract fun horizontalDivider(width: Int): AbstractGridItemDecorationBuilder
-    abstract fun horizontalDivider(width: Float): AbstractGridItemDecorationBuilder
-    abstract fun horizontalDividerColor(color: Int): AbstractGridItemDecorationBuilder
-    abstract fun verticalDivider(width: Int): AbstractGridItemDecorationBuilder
-    abstract fun verticalDivider(width: Float): AbstractGridItemDecorationBuilder
-    abstract fun verticalDividerColor(color: Int): AbstractGridItemDecorationBuilder
-    abstract fun divider(width: Int): AbstractGridItemDecorationBuilder
-    abstract fun divider(width: Float): AbstractGridItemDecorationBuilder
-    abstract fun dividerColor(color: Int): AbstractGridItemDecorationBuilder
-    abstract fun dividerAndFrame(width: Int): AbstractGridItemDecorationBuilder
-    abstract fun dividerAndFrame(width: Float): AbstractGridItemDecorationBuilder
-    abstract fun dividerAndFrameColor(color: Int): AbstractGridItemDecorationBuilder
-    abstract fun frame(width: Int): AbstractGridItemDecorationBuilder
-    abstract fun frame(width: Float): AbstractGridItemDecorationBuilder
-    abstract fun frameColor(color: Int): AbstractGridItemDecorationBuilder
+    abstract fun horizontalDivider(width: Int, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun horizontalDivider(width: Float, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun verticalDivider(width: Int, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun verticalDivider(width: Float, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun divider(width: Int, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun divider(width: Float, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun dividerAndFrame(width: Int, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun dividerAndFrame(width: Float, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun frame(width: Int, color: Int? = null): AbstractGridItemDecorationBuilder
+    abstract fun frame(width: Float, color: Int? = null): AbstractGridItemDecorationBuilder
     abstract fun cornerRadius(radius: Int): AbstractGridItemDecorationBuilder
     abstract fun cornerRadius(radius: Float): AbstractGridItemDecorationBuilder
     abstract fun titleBackGroundColor(color: Int): AbstractGridItemDecorationBuilder
@@ -40,86 +35,74 @@ class GridItemDecorationBuilder(private val context: Context) : AbstractGridItem
     private var gridBackGroundColorList: List<Int>? = null
     private var gridItemDecoration: GridItemDecoration? = null
 
-    override fun horizontalDivider(width: Int): AbstractGridItemDecorationBuilder {
+    override fun horizontalDivider(width: Int, color: Int?): AbstractGridItemDecorationBuilder {
         horizontalDividerInDp = width.toFloat()
-        return this
-    }
-
-    override fun horizontalDivider(width: Float): AbstractGridItemDecorationBuilder {
-        horizontalDividerInDp = width
-        return this
-    }
-
-    override fun horizontalDividerColor(color: Int): AbstractGridItemDecorationBuilder {
         horizontalDividerColor = color
         return this
     }
 
-    override fun verticalDivider(width: Int): AbstractGridItemDecorationBuilder {
-        verticalDividerInDp = width.toFloat()
-        return this
-    }
-
-    override fun verticalDivider(width: Float): AbstractGridItemDecorationBuilder {
-        verticalDividerInDp = width
-        return this
-    }
-
-    override fun verticalDividerColor(color: Int): AbstractGridItemDecorationBuilder {
-        verticalDividerColor = color
-        return this
-    }
-
-    override fun divider(width: Int): AbstractGridItemDecorationBuilder {
-        horizontalDividerInDp = width.toFloat()
-        verticalDividerInDp = width.toFloat()
-        return this
-    }
-
-    override fun divider(width: Float): AbstractGridItemDecorationBuilder {
+    override fun horizontalDivider(width: Float, color: Int?): AbstractGridItemDecorationBuilder {
         horizontalDividerInDp = width
-        verticalDividerInDp = width
+        horizontalDividerColor = color
         return this
     }
 
-    override fun dividerColor(color: Int): AbstractGridItemDecorationBuilder {
-        horizontalDividerColor = color
+    override fun verticalDivider(width: Int, color: Int?): AbstractGridItemDecorationBuilder {
+        verticalDividerInDp = width.toFloat()
         verticalDividerColor = color
         return this
     }
 
-    override fun dividerAndFrame(width: Int): AbstractGridItemDecorationBuilder {
+    override fun verticalDivider(width: Float, color: Int?): AbstractGridItemDecorationBuilder {
+        verticalDividerInDp = width
+        verticalDividerColor = color
+        return this
+    }
+
+    override fun divider(width: Int, color: Int?): AbstractGridItemDecorationBuilder {
         horizontalDividerInDp = width.toFloat()
+        horizontalDividerColor = color
         verticalDividerInDp = width.toFloat()
+        verticalDividerColor = color
+        return this
+    }
+
+    override fun divider(width: Float, color: Int?): AbstractGridItemDecorationBuilder {
+        horizontalDividerInDp = width
+        horizontalDividerColor = color
+        verticalDividerInDp = width
+        verticalDividerColor = color
+        return this
+    }
+
+    override fun dividerAndFrame(width: Int, color: Int?): AbstractGridItemDecorationBuilder {
+        horizontalDividerInDp = width.toFloat()
+        horizontalDividerColor = color
+        verticalDividerInDp = width.toFloat()
+        verticalDividerColor = color
         frameInDp = width.toFloat()
-        return this
-    }
-
-    override fun dividerAndFrame(width: Float): AbstractGridItemDecorationBuilder {
-        horizontalDividerInDp = width
-        verticalDividerInDp = width
-        frameInDp = width
-        return this
-    }
-
-    override fun dividerAndFrameColor(color: Int): AbstractGridItemDecorationBuilder {
-        horizontalDividerColor = color
-        verticalDividerColor = color
         frameColor = color
         return this
     }
 
-    override fun frame(width: Int): AbstractGridItemDecorationBuilder {
-        frameInDp = width.toFloat()
-        return this
-    }
-
-    override fun frame(width: Float): AbstractGridItemDecorationBuilder {
+    override fun dividerAndFrame(width: Float, color: Int?): AbstractGridItemDecorationBuilder {
+        horizontalDividerInDp = width
+        horizontalDividerColor = color
+        verticalDividerInDp = width
+        verticalDividerColor = color
         frameInDp = width
+        frameColor = color
         return this
     }
 
-    override fun frameColor(color: Int): AbstractGridItemDecorationBuilder {
+    override fun frame(width: Int, color: Int?): AbstractGridItemDecorationBuilder {
+        frameInDp = width.toFloat()
+        frameColor = color
+        return this
+    }
+
+    override fun frame(width: Float, color: Int?): AbstractGridItemDecorationBuilder {
+        frameInDp = width
         frameColor = color
         return this
     }
