@@ -31,14 +31,14 @@ class GridItemDecoration(
     private val horizontalDividerPaint = Paint().apply {
         color = horizontalDividerColor ?: Color.TRANSPARENT
         style = Paint.Style.FILL
-        isAntiAlias = false
+        isAntiAlias = true
     }
 
     private val verticalDividerWidth = context.floatDpToPx(verticalDividerInDp)
     private val verticalDividerPaint = Paint().apply {
         color = verticalDividerColor ?: Color.TRANSPARENT
         style = Paint.Style.FILL
-        isAntiAlias = false
+        isAntiAlias = true
     }
 
     private val frameWidth = context.floatDpToPx(frameInDp)
@@ -53,6 +53,7 @@ class GridItemDecoration(
         color = Color.TRANSPARENT
         style = Paint.Style.FILL
         xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        isAntiAlias = true
     }
     private val cornerFramePaint = Paint().apply {
         color = frameColor ?: Color.TRANSPARENT
